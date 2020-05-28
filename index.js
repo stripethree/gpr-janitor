@@ -10,6 +10,7 @@ async function getRepoPackages(token, orgName, pkgName) {
             edges {
               node {
                 id
+                name
                 versions(first: 10) {
                   edges {
                     node {
@@ -27,18 +28,20 @@ async function getRepoPackages(token, orgName, pkgName) {
                     }
                   }
                 }
-                name
               }
             }
             nodes {
               latestVersion {
                 version
                 updatedAt
+                id
+                registryPackage {
+                  name
+                }
               }
             }
             totalCount
           }
-          name
         }
       }
     `,
@@ -52,11 +55,22 @@ async function getRepoPackages(token, orgName, pkgName) {
   );
 }
 
-const token = process.env.TOKEN;
-const orgName = process.env.ORG_NAME;
-const pkgName = process.env.PKG_NAME;
+if (!process.env.GITHUB_TOKEN) {
+  console.error("Missing GITHUB_TOKEN");
+  return;
+}
+const token = process.env.GITHUB_TOKEN;
 
-getRepoPackages(token, orgName, pkgName).then(repoPackages => {
-  console.log(JSON.stringify(repoPackages, "\n", "  "));
-  console.log(repoPackages.organization.name);
+if (!process.env.GITHUB_REPOSITORY) {
+  console.error("Missing GITHUB_REPOSITORY");
+  return;
+}
+const [orgName, pkgName] = process.env.GITHUB_REPOSITORY.split("/");
+if (!orgName || !pkgName) {
+  console.error("Invalid GITHUB_REPOSITORY value");
+  return;
+}
+
+getRepoPackages(token, orgName, pkgName).then(organization => {
+  console.log(JSON.stringify(organization, "\n", "  "));
 });
