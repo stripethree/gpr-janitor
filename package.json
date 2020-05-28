@@ -5,5 +5,8 @@
   "repository": "git@github.com:stripethree/gpr-janitor.git",
   "author": "Jeff Israel <jeff.israel@gmail.com>",
   "license": "MIT",
-  "private": false
+  "private": false,
+  "dependencies": {
+    "@octokit/graphql": "^4.5.0"
+  }
 }
