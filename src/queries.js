@@ -20,19 +20,8 @@ exports.PACKAGE_QUERY = `
                     downloadsThisYear
                   }
                   updatedAt
-                  size
                 }
               }
-            }
-          }
-        }
-        nodes {
-          latestVersion {
-            version
-            updatedAt
-            id
-            registryPackage {
-              name
             }
           }
         }
