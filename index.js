@@ -33,7 +33,8 @@ getRepoPackages(token, orgName, pkgName).then(organization => {
 });
 */
 
-const minAgeDays = 30;
+const dryRun = true;
+const minAgeDays = 10;
 const minVersionsToKeep = 5;
 
 const data = require("./fixtures.js");
@@ -45,18 +46,35 @@ packageVersions.sort(
   (a, b) => new Date(b.node.updatedAt) - new Date(a.node.updatedAt)
 );
 
-const targetVersions = packageVersions.slice(minVersionsToKeep);
 const versionsToKeep = packageVersions.slice(0, minVersionsToKeep);
+const keeperVersions = versionsToKeep
+  .map(version => version.node.version)
+  .join(", ");
+console.log(
+  `These most recent ${minVersionsToKeep} package versions will be kept: ${keeperVersions}.`
+);
 
 const currentTime = new Date().getTime();
 const msPerDay = 1000 * 60 * 60 * 24;
 
-const oldVersions = targetVersions.filter(pv => {
+const oldVersions = packageVersions.slice(minVersionsToKeep).filter(pv => {
   const pkgUpdatedTime = new Date(pv.node.updatedAt).getTime();
-  const ageInDays = ((currentTime - pkgUpdatedTime) / msPerDay).toFixed(2);
-  return ageInDays > minAgeDays;
+  return ((currentTime - pkgUpdatedTime) / msPerDay).toFixed(2) > minAgeDays;
 });
 
-oldVersions.forEach(oldVersion => {
-  console.log(oldVersion.node);
-});
+if (!oldVersions.length) {
+  console.log("There are no package versions to delete at this time.");
+  return;
+}
+
+const targetVersions = oldVersions
+  .map(version => version.node.version)
+  .join(", ");
+console.log(
+  `These package versions are marked for deletion: ${targetVersions}.`
+);
+
+if (dryRun) {
+  console.log("Dry run mode: no packages will be deleted.");
+  return;
+}
