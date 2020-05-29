@@ -1,58 +1,14 @@
 const { graphql } = require("@octokit/graphql");
+const { PACKAGE_QUERY } = require("./src/queries");
 
 async function getRepoPackages(token, orgName, pkgName) {
-  return graphql(
-    `
-      query($orgName: String!, $pkgName: String!) {
-        organization(login: $orgName) {
-          id
-          registryPackages(first: 10, name: $pkgName) {
-            edges {
-              node {
-                id
-                name
-                versions(first: 10) {
-                  edges {
-                    node {
-                      id
-                      version
-                      statistics {
-                        downloadsThisMonth
-                        downloadsThisWeek
-                        downloadsTotalCount
-                        downloadsToday
-                        downloadsThisYear
-                      }
-                      updatedAt
-                      size
-                    }
-                  }
-                }
-              }
-            }
-            nodes {
-              latestVersion {
-                version
-                updatedAt
-                id
-                registryPackage {
-                  name
-                }
-              }
-            }
-            totalCount
-          }
-        }
-      }
-    `,
-    {
-      orgName: orgName,
-      pkgName: pkgName,
-      headers: {
-        authorization: `token ${token}`
-      }
+  return graphql(PACKAGE_QUERY, {
+    orgName: orgName,
+    pkgName: pkgName,
+    headers: {
+      authorization: `token ${token}`
     }
-  );
+  });
 }
 
 if (!process.env.GITHUB_TOKEN) {
