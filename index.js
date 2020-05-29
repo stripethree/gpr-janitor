@@ -1,10 +1,11 @@
 const { graphql } = require("@octokit/graphql");
-const { PACKAGE_QUERY } = require("./src/queries");
+const { GET_PACKAGES } = require("./src/queries");
 
 async function getRepoPackages(token, orgName, pkgName) {
-  return graphql(PACKAGE_QUERY, {
-    orgName: orgName,
-    pkgName: pkgName,
+  return graphql(GET_PACKAGES, {
+    orgName,
+    pkgName,
+    first: 25,
     headers: {
       authorization: `token ${token}`
     }
@@ -27,54 +28,57 @@ if (!orgName || !pkgName) {
   return;
 }
 
-/*
-getRepoPackages(token, orgName, pkgName).then(organization => {
-  console.log(JSON.stringify(organization, "\n", "  "));
-});
-*/
-
 const dryRun = true;
-const minAgeDays = 10;
+const minAgeDays = 30;
 const minVersionsToKeep = 5;
 
-const data = require("./fixtures.js");
-const registryPackages = data.organization.registryPackages;
-const totalCount = registryPackages.totalCount;
+getRepoPackages(token, orgName, pkgName)
+  .then(data => {
+    const registryPackages = data.organization.registryPackages;
+    const totalCount = registryPackages.totalCount;
 
-const packageVersions = registryPackages.edges[0].node.versions.edges;
-packageVersions.sort(
-  (a, b) => new Date(b.node.updatedAt) - new Date(a.node.updatedAt)
-);
+    const packageVersions = registryPackages.edges[0].node.versions.edges;
+    packageVersions.sort(
+      (a, b) => new Date(b.node.updatedAt) - new Date(a.node.updatedAt)
+    );
 
-const versionsToKeep = packageVersions.slice(0, minVersionsToKeep);
-const keeperVersions = versionsToKeep
-  .map(version => version.node.version)
-  .join(", ");
-console.log(
-  `These most recent ${minVersionsToKeep} package versions will be kept: ${keeperVersions}.`
-);
+    const versionsToKeep = packageVersions.slice(0, minVersionsToKeep);
+    const keeperVersions = versionsToKeep
+      .map(version => `\n - ${version.node.version}`)
+      .join();
+    console.log(
+      `These most recent ${minVersionsToKeep} package versions will be kept: ${keeperVersions}`
+    );
 
-const currentTime = new Date().getTime();
-const msPerDay = 1000 * 60 * 60 * 24;
+    const currentTime = new Date().getTime();
+    const msPerDay = 1000 * 60 * 60 * 24;
 
-const oldVersions = packageVersions.slice(minVersionsToKeep).filter(pv => {
-  const pkgUpdatedTime = new Date(pv.node.updatedAt).getTime();
-  return ((currentTime - pkgUpdatedTime) / msPerDay).toFixed(2) > minAgeDays;
-});
+    const oldVersions = packageVersions.slice(minVersionsToKeep).filter(pv => {
+      const pkgUpdatedTime = new Date(pv.node.updatedAt).getTime();
+      return (
+        ((currentTime - pkgUpdatedTime) / msPerDay).toFixed(2) > minAgeDays
+      );
+    });
 
-if (!oldVersions.length) {
-  console.log("There are no package versions to delete at this time.");
-  return;
-}
+    if (!oldVersions.length) {
+      console.log("There are no package versions to delete at this time.");
+      return;
+    }
 
-const targetVersions = oldVersions
-  .map(version => version.node.version)
-  .join(", ");
-console.log(
-  `These package versions are marked for deletion: ${targetVersions}.`
-);
-
-if (dryRun) {
-  console.log("Dry run mode: no packages will be deleted.");
-  return;
-}
+    const targetVersions = oldVersions
+      .map(
+        version =>
+          `\n - ${version.node.version} last updated on ${version.node.updatedAt}`
+      )
+      .join();
+    console.log(
+      `These package versions are marked for deletion: ${targetVersions}`
+    );
+    return targetVersions;
+  })
+  .then(targetVersions => {
+    if (dryRun) {
+      console.log("***** Dry run mode: no packages will be deleted. *****");
+      return;
+    }
+  });
