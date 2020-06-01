@@ -1,5 +1,6 @@
+const core = require("@actions/core");
 const { graphql } = require("@octokit/graphql");
-const { GET_PACKAGES } = require("./src/queries");
+const { DELETE_PACKAGE_VERSION, GET_PACKAGES } = require("./src/queries");
 
 async function deletePackageVersion(token, clientId, packageVersionId) {
   return graphql(DELETE_PACKAGE_VERSION, {
@@ -12,11 +13,11 @@ async function deletePackageVersion(token, clientId, packageVersionId) {
   });
 }
 
-async function getRepoPackages(token, orgName, pkgName) {
+async function getRepoPackages(token, orgName, pkgName, versions) {
   return graphql(GET_PACKAGES, {
     orgName,
     pkgName,
-    first: 25,
+    versions,
     headers: {
       authorization: `token ${token}`
     }
@@ -40,11 +41,12 @@ if (!orgName || !pkgName) {
 }
 
 const clientId = "stripethree/gpr-janitor";
-const dryRun = true;
-const minAgeDays = 30;
-const minVersionsToKeep = 5;
+const dryRun = core.getInput("dry-run");
+const maxVersionsToQuery = 25;
+const minAgeDays = core.getInput("min-age-days");
+const minVersionsToKeep = core.getInput("keep-versions");
 
-getRepoPackages(token, orgName, pkgName)
+getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
   .then(data => {
     const key = "organization"; // "user" for packages that are owned by a user
     const registryPackages = data[key].registryPackages;

@@ -7,7 +7,7 @@ exports.DELETE_PACKAGE_VERSION = `
 `;
 
 exports.GET_PACKAGES = `
-  query($orgName: String!, $pkgName: String!, $versions: Int = 25) {
+  query($orgName: String!, $pkgName: String!, $versions: Int!) {
     organization(login: $orgName) {
       id
       registryPackages(first: 1, name: $pkgName) {
