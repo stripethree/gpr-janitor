@@ -24,11 +24,11 @@ async function getRepoPackages(token, orgName, pkgName, versions) {
   });
 }
 
-if (!process.env.GITHUB_TOKEN) {
+if (!process.env.secrets.GITHUB_TOKEN) {
   console.error("Missing GITHUB_TOKEN");
   return;
 }
-const token = process.env.GITHUB_TOKEN;
+const token = process.env.secrets.GITHUB_TOKEN;
 
 if (!process.env.GITHUB_REPOSITORY) {
   console.error("Missing GITHUB_REPOSITORY");
