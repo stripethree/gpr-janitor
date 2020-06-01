@@ -2169,8 +2169,6 @@ async function getRepoPackages(token, orgName, pkgName, versions) {
   });
 }
 
-console.log(process.env.GITHUB_REPOSITORY);
-
 if (!process.env.GITHUB_TOKEN) {
   console.error("Missing GITHUB_TOKEN");
   return;
@@ -2189,7 +2187,7 @@ if (!orgName || !pkgName) {
 }
 
 const clientId = "stripethree/gpr-janitor";
-const dryRun = core.getInput("dry-run");
+const dryRun = true === core.getInput("dry-run");
 const maxVersionsToQuery = 25;
 const minAgeDays = core.getInput("min-age-days");
 const minVersionsToKeep = core.getInput("keep-versions");
