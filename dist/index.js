@@ -2211,7 +2211,7 @@ getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
       .map(version => `\n - ${version.node.version}`)
       .join("");
     console.log(
-      `These most recent ${min(
+      `These most recent ${Math.min(
         minVersionsToKeep,
         versionsToKeep.length
       )} package versions will be kept: ${keeperVersions}`
