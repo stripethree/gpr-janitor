@@ -9,5 +9,8 @@
   "dependencies": {
     "@actions/core": "^1.2.4",
     "@octokit/graphql": "^4.5.0"
+  },
+  "scripts": {
+    "build": "ncc build index.js"
   }
 }

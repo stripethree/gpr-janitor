@@ -35,8 +35,6 @@ if (!process.env.GITHUB_REPOSITORY) {
   return;
 }
 
-console.log(process.env.GITHUB_REPOSITORY);
-
 const [orgName, pkgName] = process.env.GITHUB_REPOSITORY.split("/");
 if (!orgName || !pkgName) {
   console.error("Invalid GITHUB_REPOSITORY value");
@@ -44,7 +42,7 @@ if (!orgName || !pkgName) {
 }
 
 const clientId = "stripethree/gpr-janitor";
-const dryRun = core.getInput("dry-run");
+const dryRun = true === core.getInput("dry-run");
 const maxVersionsToQuery = 25;
 const minAgeDays = core.getInput("min-age-days");
 const minVersionsToKeep = core.getInput("keep-versions");
@@ -66,7 +64,7 @@ getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
       .map(version => `\n - ${version.node.version}`)
       .join("");
     console.log(
-      `These most recent ${min(
+      `These most recent ${Math.min(
         minVersionsToKeep,
         versionsToKeep.length
       )} package versions will be kept: ${keeperVersions}`
@@ -84,7 +82,7 @@ getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
 
     if (!oldVersions.length) {
       console.log("There are no package versions to delete at this time.");
-      return;
+      return [];
     }
 
     const targetVersions = oldVersions
@@ -96,9 +94,7 @@ getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
     console.log(
       `These package versions are marked for deletion: ${targetVersions}`
     );
-    return oldVersions;
-  })
-  .then(versionsToDelete => {
+
     if (dryRun) {
       console.log("***** Dry run mode: no packages will be deleted. *****");
       return [];
