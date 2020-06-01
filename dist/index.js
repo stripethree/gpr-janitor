@@ -2229,7 +2229,7 @@ getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
 
     if (!oldVersions.length) {
       console.log("There are no package versions to delete at this time.");
-      return;
+      return [];
     }
 
     const targetVersions = oldVersions
@@ -2241,9 +2241,7 @@ getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
     console.log(
       `These package versions are marked for deletion: ${targetVersions}`
     );
-    return oldVersions;
-  })
-  .then(versionsToDelete => {
+
     if (dryRun) {
       console.log("***** Dry run mode: no packages will be deleted. *****");
       return [];
