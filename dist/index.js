@@ -2169,18 +2169,18 @@ async function getRepoPackages(token, orgName, pkgName, versions) {
   });
 }
 
-if (!process.env.secrets["GITHUB_TOKEN"]) {
+console.log(process.env.GITHUB_REPOSITORY);
+
+if (!process.env.GITHUB_TOKEN) {
   console.error("Missing GITHUB_TOKEN");
   return;
 }
-const token = process.env.secrets["GITHUB_TOKEN"];
+const token = process.env.GITHUB_TOKEN;
 
 if (!process.env.GITHUB_REPOSITORY) {
   console.error("Missing GITHUB_REPOSITORY");
   return;
 }
-
-console.log(process.env.GITHUB_REPOSITORY);
 
 const [orgName, pkgName] = process.env.GITHUB_REPOSITORY.split("/");
 if (!orgName || !pkgName) {
