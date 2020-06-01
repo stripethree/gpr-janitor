@@ -1,6 +1,17 @@
 const { graphql } = require("@octokit/graphql");
 const { GET_PACKAGES } = require("./src/queries");
 
+async function deletePackageVersion(token, clientId, packageVersionId) {
+  return graphql(DELETE_PACKAGE_VERSION, {
+    clientId,
+    packageVersionId,
+    headers: {
+      accept: "application/vnd.github.package-deletes-preview+json",
+      authorization: `token ${token}`
+    }
+  });
+}
+
 async function getRepoPackages(token, orgName, pkgName) {
   return graphql(GET_PACKAGES, {
     orgName,
@@ -28,13 +39,15 @@ if (!orgName || !pkgName) {
   return;
 }
 
+const clientId = "stripethree/gpr-janitor";
 const dryRun = true;
 const minAgeDays = 30;
 const minVersionsToKeep = 5;
 
 getRepoPackages(token, orgName, pkgName)
   .then(data => {
-    const registryPackages = data.organization.registryPackages;
+    const key = "organization"; // "user" for packages that are owned by a user
+    const registryPackages = data[key].registryPackages;
     const totalCount = registryPackages.totalCount;
 
     const packageVersions = registryPackages.edges[0].node.versions.edges;
@@ -68,17 +81,26 @@ getRepoPackages(token, orgName, pkgName)
     const targetVersions = oldVersions
       .map(
         version =>
-          `\n - ${version.node.version} last updated on ${version.node.updatedAt}`
+          `\n - ${version.node.version} (${version.node.id}) last updated on ${version.node.updatedAt}`
       )
       .join();
     console.log(
       `These package versions are marked for deletion: ${targetVersions}`
     );
-    return targetVersions;
+    return oldVersions;
   })
-  .then(targetVersions => {
+  .then(versionsToDelete => {
     if (dryRun) {
       console.log("***** Dry run mode: no packages will be deleted. *****");
-      return;
+      return [];
     }
+
+    return Promise.all(
+      versionsToDelete.map(version =>
+        deletePackageVersion(token, clientId, version.node.id)
+      )
+    );
+  })
+  .then(deletions => {
+    console.log(deletions);
   });
