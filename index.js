@@ -34,6 +34,9 @@ if (!process.env.GITHUB_REPOSITORY) {
   console.error("Missing GITHUB_REPOSITORY");
   return;
 }
+
+console.log(process.env.GITHUB_REPOSITORY);
+
 const [orgName, pkgName] = process.env.GITHUB_REPOSITORY.split("/");
 if (!orgName || !pkgName) {
   console.error("Invalid GITHUB_REPOSITORY value");
@@ -61,7 +64,7 @@ getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
     const versionsToKeep = packageVersions.slice(0, minVersionsToKeep);
     const keeperVersions = versionsToKeep
       .map(version => `\n - ${version.node.version}`)
-      .join();
+      .join("");
     console.log(
       `These most recent ${min(
         minVersionsToKeep,
@@ -89,7 +92,7 @@ getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
         version =>
           `\n - ${version.node.version} (${version.node.id}) last updated on ${version.node.updatedAt}`
       )
-      .join();
+      .join("");
     console.log(
       `These package versions are marked for deletion: ${targetVersions}`
     );
