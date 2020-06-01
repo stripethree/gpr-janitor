@@ -1,0 +1,21 @@
+name: Remove old versions from the GitHub Package Registry
+author: Jeff Israel
+inputs:
+  dry-run:
+    description: When 'true', will not delete package versions, only log information
+    required: true
+    default: "true"
+  keep-versions:
+    description: Minimum number of recent versions to keep
+    required: true
+    default: "5"
+  min-age-days:
+    descrioption: Minimum age, in days, for a release to be deleted
+    required: true
+    default: "30"
+outputs:
+  removed-versions:
+    description: Package versions that were removed
+runs:
+  using: "node12"
+  main: "dist/index.js"
