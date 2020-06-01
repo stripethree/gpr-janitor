@@ -56,13 +56,17 @@ getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
     packageVersions.sort(
       (a, b) => new Date(b.node.updatedAt) - new Date(a.node.updatedAt)
     );
+    console.log(`Found ${packageVersions.length} package versions.`);
 
     const versionsToKeep = packageVersions.slice(0, minVersionsToKeep);
     const keeperVersions = versionsToKeep
       .map(version => `\n - ${version.node.version}`)
       .join();
     console.log(
-      `These most recent ${minVersionsToKeep} package versions will be kept: ${keeperVersions}`
+      `These most recent ${min(
+        minVersionsToKeep,
+        versionsToKeep.length
+      )} package versions will be kept: ${keeperVersions}`
     );
 
     const currentTime = new Date().getTime();
