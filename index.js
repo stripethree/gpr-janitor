@@ -88,7 +88,7 @@ getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
     const targetVersions = oldVersions
       .map(
         version =>
-          `\n - ${version.node.version} (${version.node.id}) last updated on ${version.node.updatedAt}`
+          `\n - ${version.node.version} last updated on ${version.node.updatedAt}`
       )
       .join("");
     console.log(
@@ -101,7 +101,7 @@ getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
     }
 
     return Promise.all(
-      versionsToDelete.map(version =>
+      targetVersions.map(version =>
         deletePackageVersion(token, clientId, version.node.id)
       )
     );
