@@ -101,7 +101,7 @@ getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
     }
 
     return Promise.all(
-      targetVersions.map(version =>
+      oldVersions.map(version =>
         deletePackageVersion(token, clientId, version.node.id)
       )
     );
