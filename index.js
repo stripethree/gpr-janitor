@@ -108,4 +108,7 @@ getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
   })
   .then(deletions => {
     console.log(deletions);
+  })
+  .catch(error => {
+    console.error(error);
   });
