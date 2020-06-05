@@ -2256,7 +2256,7 @@ getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
     );
   })
   .then(deletions => {
-    console.log(deletions);
+    console.log(JSON.stringify(deletions, null, "\t"));
   });
 
 
