@@ -1,5 +1,9 @@
-name: Remove old versions from the GitHub Package Registry
+name: GitHub Package Repository Janitor
+description: Remove old package versions from the GitHub Package Registry
 author: Jeff Israel
+branding:
+  icon: trash-2
+  color: blue
 inputs:
   dry-run:
     description: When 'true', will not delete package versions, only log information
@@ -13,9 +17,6 @@ inputs:
     descrioption: Minimum age, in days, for a release to be deleted
     required: true
     default: "30"
-outputs:
-  removed-versions:
-    description: Package versions that were removed
 runs:
   using: "node12"
   main: "dist/index.js"
