@@ -2,15 +2,21 @@ const core = require("@actions/core");
 const { graphql } = require("@octokit/graphql");
 const { DELETE_PACKAGE_VERSION, GET_PACKAGES } = require("./src/queries");
 
-async function deletePackageVersion(token, clientId, packageVersionId) {
+async function deletePackageVersion(token, clientId, version) {
   return graphql(DELETE_PACKAGE_VERSION, {
     clientId,
-    packageVersionId,
+    packageVersionId: version.node.id,
     headers: {
       accept: "application/vnd.github.package-deletes-preview+json",
       authorization: `token ${token}`
     }
-  });
+  })
+    .then(data => {
+      return { version, data };
+    })
+    .catch(error => {
+      return { version, error };
+    });
 }
 
 async function getRepoPackages(token, orgName, pkgName, versions) {
@@ -88,7 +94,7 @@ getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
     const targetVersions = oldVersions
       .map(
         version =>
-          `\n - ${version.node.version} (${version.node.id}) last updated on ${version.node.updatedAt}`
+          `\n - ${version.node.version} last updated on ${version.node.updatedAt}`
       )
       .join("");
     console.log(
@@ -101,11 +107,18 @@ getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
     }
 
     return Promise.all(
-      versionsToDelete.map(version =>
-        deletePackageVersion(token, clientId, version.node.id)
-      )
+      oldVersions.map(version => deletePackageVersion(token, clientId, version))
     );
   })
   .then(deletions => {
-    console.log(deletions);
+    outputs = deletions.map(item => {
+      if (item.data && item.data.deletePackageVersion.success === true) {
+        return `Version ${item.version.node.version} deleted.`;
+      }
+      if (item.error) {
+        return `Failed to delete version ${item.version.node.version}. Error: ${item.error}`;
+      }
+      return `Unexpected result for version ${item.version.node.version}. Details: ${item.data}`;
+    });
+    console.log(outputs.join("\n"));
   });
