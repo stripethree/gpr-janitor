@@ -2147,15 +2147,21 @@ const core = __webpack_require__(18);
 const { graphql } = __webpack_require__(209);
 const { DELETE_PACKAGE_VERSION, GET_PACKAGES } = __webpack_require__(307);
 
-async function deletePackageVersion(token, clientId, packageVersionId) {
+async function deletePackageVersion(token, clientId, version) {
   return graphql(DELETE_PACKAGE_VERSION, {
     clientId,
-    packageVersionId,
+    packageVersionId: version.node.id,
     headers: {
       accept: "application/vnd.github.package-deletes-preview+json",
       authorization: `token ${token}`
     }
-  });
+  })
+    .then(data => {
+      return { version, data };
+    })
+    .catch(error => {
+      return { version, error };
+    });
 }
 
 async function getRepoPackages(token, orgName, pkgName, versions) {
@@ -2246,16 +2252,16 @@ getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
     }
 
     return Promise.all(
-      oldVersions.map(version =>
-        deletePackageVersion(token, clientId, version.node.id)
-      )
+      oldVersions.map(version => {
+        return {
+          version,
+          data: deletePackageVersion(token, clientId, version)
+        };
+      })
     );
   })
   .then(deletions => {
     console.log(deletions);
-  })
-  .catch(error => {
-    console.error(error);
   });
 
 
