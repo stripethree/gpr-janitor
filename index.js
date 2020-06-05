@@ -111,5 +111,14 @@ getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
     );
   })
   .then(deletions => {
-    console.log(JSON.stringify(deletions, null, "\t"));
+    outputs = deletions.map(item => {
+      if (item.data && item.data.deletePackageVersion.success === true) {
+        return `Version ${version.node.version} deleted.`;
+      }
+      if (item.error) {
+        return `Failed to delete version ${version.node.version}. Error: ${item.error}`;
+      }
+      return `Unexpected result for version ${version.node.version}. Details: ${item.data}`;
+    });
+    console.log(outputs.join("\n"));
   });
