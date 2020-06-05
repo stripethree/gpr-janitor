@@ -2252,12 +2252,7 @@ getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
     }
 
     return Promise.all(
-      oldVersions.map(version => {
-        return {
-          version,
-          data: deletePackageVersion(token, clientId, version)
-        };
-      })
+      oldVersions.map(version => deletePackageVersion(token, clientId, version))
     );
   })
   .then(deletions => {
