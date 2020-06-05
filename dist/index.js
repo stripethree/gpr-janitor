@@ -2258,12 +2258,12 @@ getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
   .then(deletions => {
     outputs = deletions.map(item => {
       if (item.data && item.data.deletePackageVersion.success === true) {
-        return `Version ${version.node.version} deleted.`;
+        return `Version ${item.version.node.version} deleted.`;
       }
       if (item.error) {
-        return `Failed to delete version ${version.node.version}. Error: ${item.error}`;
+        return `Failed to delete version ${item.version.node.version}. Error: ${item.error}`;
       }
-      return `Unexpected result for version ${version.node.version}. Details: ${item.data}`;
+      return `Unexpected result for version ${item.version.node.version}. Details: ${item.data}`;
     });
     console.log(outputs.join("\n"));
   });
