@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Clean up old package versions
         id: clean-up-old-package-versions
-        uses: stripethree/gpr-janitor@v0.0.1
+        uses: stripethree/gpr-janitor@v1
         with:
           dry-run: true
           keep-versions: 5
@@ -64,3 +64,5 @@ A side effect of this choice is that this action, as currently implemented, will
 The idea for this Action came after moving an engineering organization over to the GitHub Package Registry, which I wrote a [blog post about](https://medium.com/@stripethree/migrating-to-the-github-package-registry-948d4df756f1). Within a month, we updated and published our React component library frequently enough that we exhausted the included storage with just the activity on this single package. We thought it might be a good idea to look into ways to prune versions we did not need to keep around since this package is not public.
 
 In my research for similar actions, the [`remove-package-versions`](https://github.com/navikt/remove-package-versions) Action developed by the Norwegian Labour and Welfare Directorate stood out. I referred back to it frequently as I figured out how to develop this Action, and would be remiss to not highlight their work as an inspiration.
+
+While testing this action, I also found a version published by [GitHub](https://github.com/actions/delete-package-versions)!
