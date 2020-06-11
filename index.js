@@ -2,29 +2,29 @@ const core = require("@actions/core");
 const { graphql } = require("@octokit/graphql");
 const { DELETE_PACKAGE_VERSION, GET_PACKAGES } = require("./src/queries");
 
-async function deletePackageVersion(token, clientId, version) {
+async function deletePackageVersion(token, clientId, versionId) {
   return graphql(DELETE_PACKAGE_VERSION, {
     clientId,
-    packageVersionId: version.node.id,
+    packageVersionId: versionId,
     headers: {
       accept: "application/vnd.github.package-deletes-preview+json",
       authorization: `token ${token}`
     }
   })
     .then(data => {
-      return { version, data };
+      return { versionId, data };
     })
     .catch(error => {
-      return { version, error };
+      return { versionId, error };
     });
 }
 
-async function getRepoPackages(token, orgName, pkgName, versions) {
+async function getRepoPackages(token, owner, repoName) {
   return graphql(GET_PACKAGES, {
-    orgName,
-    pkgName,
-    versions,
+    owner,
+    repoName,
     headers: {
+      accept: "application/vnd.github.packages-preview+json",
       authorization: `token ${token}`
     }
   });
@@ -41,65 +41,64 @@ if (!process.env.GITHUB_REPOSITORY) {
   return;
 }
 
-const [orgName, pkgName] = process.env.GITHUB_REPOSITORY.split("/");
-if (!orgName || !pkgName) {
+const [owner, repoName] = process.env.GITHUB_REPOSITORY.split("/");
+if (!owner || !repoName) {
   console.error("Invalid GITHUB_REPOSITORY value");
   return;
 }
 
 const clientId = "stripethree/gpr-janitor";
-const dryRun = true === core.getInput("dry-run");
+const dryRun = true; // === core.getInput("dry-run");
 const maxVersionsToQuery = 25;
-const minAgeDays = core.getInput("min-age-days");
-const minVersionsToKeep = core.getInput("keep-versions");
+const minAgeDays = 10; // core.getInput("min-age-days");
+const minVersionsToKeep = 0; // core.getInput("keep-versions");
 
-getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
+getRepoPackages(token, owner, repoName, maxVersionsToQuery)
   .then(data => {
-    const key = "organization"; // "user" for packages that are owned by a user
-    const registryPackages = data[key].registryPackages;
-    const totalCount = registryPackages.totalCount;
+    const packages = data.repository.packages;
 
-    const packageVersions = registryPackages.edges[0].node.versions.edges;
-    packageVersions.sort(
-      (a, b) => new Date(b.node.updatedAt) - new Date(a.node.updatedAt)
-    );
-    console.log(`Found ${packageVersions.length} package versions.`);
+    const versionsToDelete = [];
 
-    const versionsToKeep = packageVersions.slice(0, minVersionsToKeep);
-    const keeperVersions = versionsToKeep
-      .map(version => `\n - ${version.node.version}`)
-      .join("");
-    console.log(
-      `These most recent ${Math.min(
-        minVersionsToKeep,
-        versionsToKeep.length
-      )} package versions will be kept: ${keeperVersions}`
-    );
+    // for each package...
+    packages.nodes.forEach(pkg => {
+      const currentTime = new Date().getTime();
+      const msPerDay = 1000 * 60 * 60 * 24;
 
-    const currentTime = new Date().getTime();
-    const msPerDay = 1000 * 60 * 60 * 24;
+      const pkgName = pkg.name;
 
-    const oldVersions = packageVersions.slice(minVersionsToKeep).filter(pv => {
-      const pkgUpdatedTime = new Date(pv.node.updatedAt).getTime();
-      return (
-        ((currentTime - pkgUpdatedTime) / msPerDay).toFixed(2) > minAgeDays
+      const latestVersion = pkg.latestVersion.version;
+      const pkgVersions = pkg.versions.nodes;
+
+      console.log(
+        `Found ${pkgVersions.length} versions of package '${owner}/${pkgName}'.`
       );
+
+      const oldVersions = pkgVersions
+        .slice(minVersionsToKeep)
+        .filter(pkgVersion => {
+          const pkgUpdatedTime = new Date(
+            Math.max.apply(
+              null,
+              pkgVersion.files.nodes.map(function(e) {
+                return new Date(e.updatedAt);
+              })
+            )
+          ).getTime();
+          return (
+            ((currentTime - pkgUpdatedTime) / msPerDay).toFixed(2) > minAgeDays
+          );
+        })
+        .filter(pkgVersion => {
+          // never delete the current version
+          return pkgVersion.version !== latestVersion;
+        })
+        .forEach(pkgVersion => {
+          console.log(
+            `Version ${pkgVersion.version} of package '${owner}/${pkgName}' (id: ${pkgVersion.id}) marked for deletion.`
+          );
+          versionsToDelete.push(pkgVersion.id);
+        });
     });
-
-    if (!oldVersions.length) {
-      console.log("There are no package versions to delete at this time.");
-      return [];
-    }
-
-    const targetVersions = oldVersions
-      .map(
-        version =>
-          `\n - ${version.node.version} last updated on ${version.node.updatedAt}`
-      )
-      .join("");
-    console.log(
-      `These package versions are marked for deletion: ${targetVersions}`
-    );
 
     if (dryRun) {
       console.log("***** Dry run mode: no packages will be deleted. *****");
@@ -113,12 +112,12 @@ getRepoPackages(token, orgName, pkgName, maxVersionsToQuery)
   .then(deletions => {
     outputs = deletions.map(item => {
       if (item.data && item.data.deletePackageVersion.success === true) {
-        return `Version ${item.version.node.version} deleted.`;
+        return `Version id ${item.versionId} deleted.`;
       }
       if (item.error) {
-        return `Failed to delete version ${item.version.node.version}. Error: ${item.error}`;
+        return `Failed to delete version id ${item.versionId}. Error: ${item.error}`;
       }
-      return `Unexpected result for version ${item.version.node.version}. Details: ${item.data}`;
+      return `Unexpected result for version id ${item.versionId}. Details: ${item.data}`;
     });
     console.log(outputs.join("\n"));
   });
