@@ -7,34 +7,31 @@ exports.DELETE_PACKAGE_VERSION = `
 `;
 
 exports.GET_PACKAGES = `
-  query($orgName: String!, $pkgName: String!, $versions: Int!) {
-    organization(login: $orgName) {
-      id
-      registryPackages(first: 1, name: $pkgName) {
-        edges {
-          node {
-            id
-            name
-            versions(first: $versions) {
-              edges {
-                node {
-                  id
-                  version
-                  statistics {
-                    downloadsThisMonth
-                    downloadsThisWeek
-                    downloadsTotalCount
-                    downloadsToday
-                    downloadsThisYear
-                  }
-                  updatedAt
+  query($owner: String!, $repoName: String!, $numPackages: Int = 10, $numVersions: Int = 100) {
+    repository(name: $repoName owner: $owner) {
+        isPrivate
+        packages(first: $numPackages orderBy:{field: CREATED_AT direction: DESC}) {
+            nodes {
+                name
+                latestVersion {
+                    version
                 }
-              }
+                versions(first: $numVersions, orderBy: {field: CREATED_AT direction: DESC}) {
+                    totalCount
+                    nodes {
+                        id
+                        files(first: 10) {
+                            totalCount
+                            nodes {
+                                name
+                                updatedAt
+                            }
+                        }
+                        version
+                    }
+                }
             }
-          }
         }
-        totalCount
-      }
     }
   }
 `;
