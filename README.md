@@ -16,16 +16,19 @@ jobs:
     steps:
       - name: Clean up old package versions
         id: clean-up-old-package-versions
-        uses: stripethree/gpr-janitor@v1
+        uses: stripethree/gpr-janitor@v2
         with:
           dry-run: true
           keep-versions: 5
           min-age-days: 30
+          # packages-to-fetch: 1 - (default)
+          versions-to-fetch: 10
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-Alternatively, the action can be periodically scheduled using the [`on.schedule` syntax](https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#onschedule).
+Alternatively, the action can be periodically scheduled using the [`on.schedule` syntax](https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#onschedule). A sample workflow demonstrating this this can be found [here](https://github.com/stripethree/github-workflows/blob/master/workflows/gpr-janitor.yml).
 
 ## Usage
 
@@ -53,11 +56,21 @@ The minimum number of versions to keep in the registry, when ordered by most rec
 
 The minimum number of days since last update (based on the `updatedAt` field) for a version to be marked for deletion. Defaults to `30`.
 
-## Limitations
+### `packages-to-fetch`
 
-This Action fetches packages through the [`Organizations` object](https://developer.github.com/v4/object/organization/) of the GitHub GraphQL API. The design decisions was made in order to access data about the package that is not yet available via the [`PackageVersion` preview object](https://developer.github.com/v4/object/packageversion/). Specifically, while the `PackageVersion` object allows sorting by the `CREATED_AT` field, it does not provide `createdAt` or `updatedAt` as fields. While `RegistryPackageVersion` is marked for deprecation, it contains this information, as well as more detailed package statistics useful for other, future enhancements.
+The maximum number of packages to fetch and evaluate. If you did not know, yes, you can [publish multiple packages to the same repository](https://help.github.com/en/packages/using-github-packages-with-your-projects-ecosystem/configuring-npm-for-use-with-github-packages#publishing-multiple-packages-to-the-same-repository). Defaults to `1`.
 
-A side effect of this choice is that this action, as currently implemented, will only work for packages published by an _organization_ and will fail on packages published by an individual _user_. That also means that while the `gpr-janitor` Action remains published under an individual GitHub account, it cannot clean up after _itself_.
+### `versions-to-fetch`
+
+The maximum number of versions to fetch and evaluate for potential deletion. If the repository contains more than one package, this value applies _per package_. Defaults to `25`
+
+## Caveats
+
+Version 1 of this Action fetched packages through the [`Organizations` object](https://developer.github.com/v4/object/organization/) of the GitHub GraphQL API. The design decisions was made in order to access data about the package that is not yet available via the [`PackageVersion` preview object](https://developer.github.com/v4/object/packageversion/). Specifically, while the `PackageVersion` object allows sorting by the `CREATED_AT` field, it does not provide `createdAt` or `updatedAt` as fields.
+
+About a week after I published v1, I recieved an email notification that GitHub was shutting down the deprecated APIs that v1 was using. Thus, I embarked on updating this to use the aforementioned `PackageVersion` object via its connection to the [`Repository` object](https://developer.github.com/v4/object/repository/).
+
+To re-implement the 'minimum age' criteria is where things got a little creative. Using the [`PackageFile`](https://developer.github.com/v4/object/packagefile/), the Action uses the latest `updatedAt` timestamp of files that are associated with a specific package version in the comparison against the `min-age-days` attribute. My assumption is that the majority of packages will have a single file, presumably an archive, associated with a version.
 
 ### Prior art
 
