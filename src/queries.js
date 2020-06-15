@@ -7,16 +7,16 @@ exports.DELETE_PACKAGE_VERSION = `
 `;
 
 exports.GET_PACKAGES = `
-  query($owner: String!, $repoName: String!, $numPackages: Int = 10, $numVersions: Int = 100) {
+  query($owner: String!, $repoName: String!, $maxPackages: Int!, $maxVersions: Int!) {
     repository(name: $repoName owner: $owner) {
         isPrivate
-        packages(first: $numPackages orderBy:{field: CREATED_AT direction: DESC}) {
+        packages(first: $maxPackages orderBy:{field: CREATED_AT direction: DESC}) {
             nodes {
                 name
                 latestVersion {
                     version
                 }
-                versions(first: $numVersions, orderBy: {field: CREATED_AT direction: DESC}) {
+                versions(first: $maxVersions, orderBy: {field: CREATED_AT direction: DESC}) {
                     totalCount
                     nodes {
                         id

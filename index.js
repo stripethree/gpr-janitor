@@ -19,10 +19,18 @@ async function deletePackageVersion(token, clientId, versionId) {
     });
 }
 
-async function getRepoPackages(token, owner, repoName) {
+async function getRepoPackages(
+  token,
+  owner,
+  repoName,
+  maxPackages,
+  maxVersions
+) {
   return graphql(GET_PACKAGES, {
     owner,
     repoName,
+    maxPackages,
+    maxVersions,
     headers: {
       accept: "application/vnd.github.packages-preview+json",
       authorization: `token ${token}`
@@ -49,11 +57,12 @@ if (!owner || !repoName) {
 
 const clientId = "stripethree/gpr-janitor";
 const dryRun = true; // === core.getInput("dry-run");
-const maxVersionsToQuery = 25;
+const maxPackagesToFetch = 1; // core.getInput("packages-to-fetch");
+const maxVersionsToFetch = 25; // core.getInput("versions-to-fetch");
 const minAgeDays = 10; // core.getInput("min-age-days");
 const minVersionsToKeep = 0; // core.getInput("keep-versions");
 
-getRepoPackages(token, owner, repoName, maxVersionsToQuery)
+getRepoPackages(token, owner, repoName, maxPackagesToFetch, maxVersionsToFetch)
   .then(data => {
     const packages = data.repository.packages;
 
@@ -106,7 +115,9 @@ getRepoPackages(token, owner, repoName, maxVersionsToQuery)
     }
 
     return Promise.all(
-      oldVersions.map(version => deletePackageVersion(token, clientId, version))
+      versionsToDelete.map(versionId =>
+        deletePackageVersion(token, clientId, versionId)
+      )
     );
   })
   .then(deletions => {

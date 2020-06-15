@@ -10,13 +10,22 @@ inputs:
     required: true
     default: "true"
   keep-versions:
-    description: Minimum number of recent versions to keep
+    description: Minimum number of recent versions to keep, per package
     required: true
     default: "5"
   min-age-days:
-    descrioption: Minimum age, in days, for a release to be deleted
+    description: Minimum age, in days, for a release to be deleted
     required: true
     default: "30"
+  packages-to-fetch:
+    description: Maximum number of packages to fetch
+    required: true
+    default: "1"
+  versions-to-fetch:
+    description: Maximum number of versions to fetch, per package
+    required: true
+    default: "25"
+
 runs:
   using: "node12"
   main: "dist/index.js"
