@@ -56,11 +56,11 @@ if (!owner || !repoName) {
 }
 
 const clientId = "stripethree/gpr-janitor";
-const dryRun = true; // === core.getInput("dry-run");
-const maxPackagesToFetch = 1; // core.getInput("packages-to-fetch");
-const maxVersionsToFetch = 25; // core.getInput("versions-to-fetch");
-const minAgeDays = 10; // core.getInput("min-age-days");
-const minVersionsToKeep = 0; // core.getInput("keep-versions");
+const dryRun = true === core.getInput("dry-run");
+const maxPackagesToFetch = core.getInput("packages-to-fetch");
+const maxVersionsToFetch = core.getInput("versions-to-fetch");
+const minAgeDays = core.getInput("min-age-days");
+const minVersionsToKeep = core.getInput("keep-versions");
 
 getRepoPackages(token, owner, repoName, maxPackagesToFetch, maxVersionsToFetch)
   .then(data => {
