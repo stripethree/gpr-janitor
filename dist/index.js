@@ -2164,10 +2164,18 @@ async function deletePackageVersion(token, clientId, versionId) {
     });
 }
 
-async function getRepoPackages(token, owner, repoName) {
+async function getRepoPackages(
+  token,
+  owner,
+  repoName,
+  maxPackages,
+  maxVersions
+) {
   return graphql(GET_PACKAGES, {
     owner,
     repoName,
+    maxPackages,
+    maxVersions,
     headers: {
       accept: "application/vnd.github.packages-preview+json",
       authorization: `token ${token}`
@@ -2193,12 +2201,13 @@ if (!owner || !repoName) {
 }
 
 const clientId = "stripethree/gpr-janitor";
-const dryRun = true; // === core.getInput("dry-run");
-const maxVersionsToQuery = 25;
-const minAgeDays = 10; // core.getInput("min-age-days");
-const minVersionsToKeep = 0; // core.getInput("keep-versions");
+const dryRun = true === core.getInput("dry-run");
+const maxPackagesToFetch = core.getInput("packages-to-fetch");
+const maxVersionsToFetch = core.getInput("versions-to-fetch");
+const minAgeDays = core.getInput("min-age-days");
+const minVersionsToKeep = core.getInput("keep-versions");
 
-getRepoPackages(token, owner, repoName, maxVersionsToQuery)
+getRepoPackages(token, owner, repoName, maxPackagesToFetch, maxVersionsToFetch)
   .then(data => {
     const packages = data.repository.packages;
 
@@ -2251,7 +2260,9 @@ getRepoPackages(token, owner, repoName, maxVersionsToQuery)
     }
 
     return Promise.all(
-      oldVersions.map(version => deletePackageVersion(token, clientId, version))
+      versionsToDelete.map(versionId =>
+        deletePackageVersion(token, clientId, versionId)
+      )
     );
   })
   .then(deletions => {
@@ -2909,16 +2920,16 @@ exports.DELETE_PACKAGE_VERSION = `
 `;
 
 exports.GET_PACKAGES = `
-  query($owner: String!, $repoName: String!, $numPackages: Int = 10, $numVersions: Int = 100) {
+  query($owner: String!, $repoName: String!, $maxPackages: Int!, $maxVersions: Int!) {
     repository(name: $repoName owner: $owner) {
         isPrivate
-        packages(first: $numPackages orderBy:{field: CREATED_AT direction: DESC}) {
+        packages(first: $maxPackages orderBy:{field: CREATED_AT direction: DESC}) {
             nodes {
                 name
                 latestVersion {
                     version
                 }
-                versions(first: $numVersions, orderBy: {field: CREATED_AT direction: DESC}) {
+                versions(first: $maxVersions, orderBy: {field: CREATED_AT direction: DESC}) {
                     totalCount
                     nodes {
                         id
