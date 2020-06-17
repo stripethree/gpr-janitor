@@ -28,7 +28,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-Alternatively, the action can be periodically scheduled using the [`on.schedule` syntax](https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#onschedule). A sample workflow demonstrating this this can be found [here](https://github.com/stripethree/github-workflows/blob/master/workflows/gpr-janitor.yml).
+Alternatively, the action can be periodically scheduled using the [`on.schedule` syntax](https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#onschedule). A sample workflow demonstrating this this can be found [here](https://github.com/stripethree/github-workflows/blob/main/workflows/gpr-janitor.yml).
 
 ## Usage
 
