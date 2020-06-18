@@ -1,0 +1,51 @@
+name: Package and publish
+# Inspired by https://www.edwardthomson.com/blog/building_an_action.html
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          npm ci
+          npm run build --if-present
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+        with:
+          ref: "dist"
+          path: "dist"
+
+      - run: |
+          npm install
+          npm run build
+          cp action.yml dist/
+          cp README.md dist/
+          cp LICENSE dist/
+
+      - id: status
+        run: |
+          source ../.github/workflows/actions.sh
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::set-output name=has_changes::1"
+          fi
+        working-directory: dist
+
+      - run: |
+          git add --verbose .
+          git config user.name 'Jeff Israel'
+          git config user.email 'github@jeffisrael.com'
+          git commit -m 'Update from "publish and package" action'
+          git push origin dist
+        if: steps.status.outputs.has_changes == '1'
+        working-directory: dist
