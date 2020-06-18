@@ -12,5 +12,8 @@
   },
   "scripts": {
     "build": "ncc build index.js"
+  },
+  "devDependencies": {
+    "@zeit/ncc": "^0.22.3"
   }
 }
