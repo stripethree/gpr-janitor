@@ -448,7 +448,8 @@ if (!owner || !repoName) {
 }
 
 const clientId = "stripethree/gpr-janitor";
-const dryRun = true === core.getInput("dry-run");
+console.log(core.getInput("dry-run"));
+const dryRun = core.getInput("dry-run") === "true";
 const maxPackagesToFetch = parseInt(core.getInput("packages-to-fetch"));
 const maxVersionsToFetch = parseInt(core.getInput("versions-to-fetch"));
 const minAgeDays = parseInt(core.getInput("min-age-days"));
