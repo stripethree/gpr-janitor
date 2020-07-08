@@ -449,10 +449,10 @@ if (!owner || !repoName) {
 
 const clientId = "stripethree/gpr-janitor";
 const dryRun = true === core.getInput("dry-run");
-const maxPackagesToFetch = core.getInput("packages-to-fetch");
-const maxVersionsToFetch = core.getInput("versions-to-fetch");
-const minAgeDays = core.getInput("min-age-days");
-const minVersionsToKeep = core.getInput("keep-versions");
+const maxPackagesToFetch = parseInt(core.getInput("packages-to-fetch"));
+const maxVersionsToFetch = parseInt(core.getInput("versions-to-fetch"));
+const minAgeDays = parseInt(core.getInput("min-age-days"));
+const minVersionsToKeep = parseInt(core.getInput("keep-versions"));
 
 console.log(`dryRun: ${dryRun}`);
 console.log(`maxPackagesToFetch: ${maxPackagesToFetch}`);
@@ -529,6 +529,9 @@ getRepoPackages(token, owner, repoName, maxPackagesToFetch, maxVersionsToFetch)
       return `Unexpected result for version id ${item.versionId}. Details: ${item.data}`;
     });
     console.log(outputs.join("\n"));
+  })
+  .catch((err) => {
+    console.log(err);
   });
 
 
