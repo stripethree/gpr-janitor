@@ -2,6 +2,9 @@
 
 A GitHub Action to clean up old package versions
 
+![Build pull requests](https://github.com/stripethree/gpr-janitor/workflows/Build%20pull%20requests/badge.svg)
+![Package and publish](https://github.com/stripethree/gpr-janitor/workflows/Package%20and%20publish/badge.svg)
+
 ## Install
 
 To use this action, create a workflow and reference the action repository via the `use` syntax.

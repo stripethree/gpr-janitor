@@ -1,4 +1,4 @@
-name: Package and publish
+name: Update distribution
 # Inspired by https://www.edwardthomson.com/blog/building_an_action.html
 
 on:
@@ -11,7 +11,7 @@ jobs:
     needs: build
 
     steps:
-      - name: Check out default branch
+      - name: Check out main branch
         uses: actions/checkout@v2
       - name: Check out distribution branch
         uses: actions/checkout@v2
