@@ -10,7 +10,6 @@ on:
 jobs:
   build-to-dist:
     runs-on: ubuntu-latest
-    needs: build
 
     steps:
       - name: Check out main branch
