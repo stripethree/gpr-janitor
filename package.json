@@ -11,7 +11,7 @@
     "@octokit/graphql": "^4.5.1"
   },
   "scripts": {
-    "build": "ncc build index.js"
+    "build": "ncc build src/index.js"
   },
   "devDependencies": {
     "@zeit/ncc": "^0.22.3"
