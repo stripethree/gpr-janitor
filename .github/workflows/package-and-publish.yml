@@ -6,41 +6,37 @@ on:
     branches: [main]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-      - run: |
-          npm ci
-          npm run build --if-present
-
-  publish:
+  build-to-dist:
     runs-on: ubuntu-latest
     needs: build
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/checkout@v2
+      - name: Check out default branch
+        uses: actions/checkout@v2
+      - name: Check out distribution branch
+        uses: actions/checkout@v2
         with:
           ref: "dist"
           path: "dist"
 
-      - run: |
-          npm ci
+      - name: Build and package
+        run: |
+          npm i
           npm run build
           cp action.yml dist/
           cp README.md dist/
           cp LICENSE dist/
 
-      - id: status
+      - name: Check for changes
+        id: status
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             echo "::set-output name=has_changes::yes"
           fi
         working-directory: dist
 
-      - run: |
+      - name: Update distribution
+        run: |
           git add --verbose .
           git config user.name 'Jeff Israel'
           git config user.email 'github@jeffisrael.com'
