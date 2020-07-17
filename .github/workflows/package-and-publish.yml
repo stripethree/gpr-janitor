@@ -27,7 +27,7 @@ jobs:
           path: "dist"
 
       - run: |
-          npm install
+          npm ci
           npm run build
           cp action.yml dist/
           cp README.md dist/
@@ -35,9 +35,8 @@ jobs:
 
       - id: status
         run: |
-          source ../.github/workflows/actions.sh
           if [ -n "$(git status --porcelain)" ]; then
-            echo "::set-output name=has_changes::1"
+            echo "::set-output name=has_changes::yes"
           fi
         working-directory: dist
 
@@ -47,5 +46,5 @@ jobs:
           git config user.email 'github@jeffisrael.com'
           git commit -m 'Update from "publish and package" action'
           git push origin dist
-        if: steps.status.outputs.has_changes == '1'
+        if: steps.status.outputs.has_changes == 'yes'
         working-directory: dist
