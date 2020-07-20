@@ -1,6 +1,6 @@
 const core = require("@actions/core");
 const { graphql } = require("@octokit/graphql");
-const { DELETE_PACKAGE_VERSION, GET_PACKAGES } = require("./src/queries");
+const { DELETE_PACKAGE_VERSION, GET_PACKAGES } = require("./queries");
 
 async function deletePackageVersion(token, clientId, versionId) {
   return graphql(DELETE_PACKAGE_VERSION, {
