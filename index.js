@@ -160,6 +160,50 @@ module.exports = require("https");
 
 /***/ }),
 
+/***/ 343:
+/***/ (function(__unusedmodule, exports) {
+
+exports.DELETE_PACKAGE_VERSION = `
+  mutation($clientId: String!, $packageVersionId: String! ) {
+    deletePackageVersion(input:{ clientMutationId: $clientId, packageVersionId: $packageVersionId }) {
+      success
+    }
+  }
+`;
+
+exports.GET_PACKAGES = `
+  query($owner: String!, $repoName: String!, $maxPackages: Int!, $maxVersions: Int!) {
+    repository(name: $repoName owner: $owner) {
+        isPrivate
+        packages(first: $maxPackages orderBy:{field: CREATED_AT direction: DESC}) {
+            nodes {
+                name
+                latestVersion {
+                    version
+                }
+                versions(first: $maxVersions, orderBy: {field: CREATED_AT direction: DESC}) {
+                    totalCount
+                    nodes {
+                        id
+                        files(first: 10) {
+                            totalCount
+                            nodes {
+                                name
+                                updatedAt
+                            }
+                        }
+                        version
+                    }
+                }
+            }
+        }
+    }
+  }
+`;
+
+
+/***/ }),
+
 /***/ 385:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -543,14 +587,6 @@ const endpoint = withDefaults(null, DEFAULTS);
 
 exports.endpoint = endpoint;
 //# sourceMappingURL=index.js.map
-
-
-/***/ }),
-
-/***/ 396:
-/***/ (function(module) {
-
-module.exports = eval("require")("./src/queries");
 
 
 /***/ }),
@@ -2622,7 +2658,7 @@ module.exports = require("path");
 
 const core = __webpack_require__(470);
 const { graphql } = __webpack_require__(898);
-const { DELETE_PACKAGE_VERSION, GET_PACKAGES } = __webpack_require__(396);
+const { DELETE_PACKAGE_VERSION, GET_PACKAGES } = __webpack_require__(343);
 
 async function deletePackageVersion(token, clientId, versionId) {
   return graphql(DELETE_PACKAGE_VERSION, {
