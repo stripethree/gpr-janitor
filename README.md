@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Clean up old package versions
         id: clean-up-old-package-versions
-        uses: stripethree/gpr-janitor@v2
+        uses: stripethree/gpr-janitor@dist
         with:
           dry-run: true
           keep-versions: 5
