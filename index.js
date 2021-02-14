@@ -2982,7 +2982,7 @@ var isPlainObject = __webpack_require__(356);
 var nodeFetch = _interopDefault(__webpack_require__(454));
 var requestError = __webpack_require__(463);
 
-const VERSION = "5.4.13";
+const VERSION = "5.4.14";
 
 function getBufferResponse(response) {
   return response.arrayBuffer();
@@ -3173,7 +3173,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 var request = __webpack_require__(753);
 var universalUserAgent = __webpack_require__(796);
 
-const VERSION = "4.5.9";
+const VERSION = "4.6.0";
 
 class GraphqlError extends Error {
   constructor(request, response) {
