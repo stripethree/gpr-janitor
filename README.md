@@ -2,8 +2,8 @@
 
 A GitHub Action to clean up old package versions
 
-![Build PRs](https://github.com/stripethree/gpr-janitor/workflows/Build%20PRs/badge.svg)
-![Package and publish](https://github.com/stripethree/gpr-janitor/workflows/Package%20and%20publish/badge.svg)
+[![Build PRs](https://github.com/stripethree/gpr-janitor/actions/workflows/build-on-pr.yml/badge.svg)](https://github.com/stripethree/gpr-janitor/actions/workflows/build-on-pr.yml)
+[![Update distribution](https://github.com/stripethree/gpr-janitor/actions/workflows/update-dist.yml/badge.svg)](https://github.com/stripethree/gpr-janitor/actions/workflows/update-dist.yml)
 
 ## Install
 
