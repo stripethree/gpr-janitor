@@ -37,6 +37,8 @@ jobs:
         working-directory: dist
 
       - name: Update distribution
+        env:
+          GITHUB_TOKEN: ${{ secrets.UPDATE_DIST_PAT }}
         run: |
           git add --verbose .
           git config user.name 'Jeff Israel'
