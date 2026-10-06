@@ -7,13 +7,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out PR branch
-        uses: actions/checkout@v2
-      - name: Setup node
-        uses: actions/setup-node@v1
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 12.x
+          node-version: 24
+          cache: npm
+
       - run: npm ci
+      - run: npm test
       - run: npm run build

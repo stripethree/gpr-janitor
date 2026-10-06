@@ -1,49 +1,31 @@
-name: Update distribution
-# Inspired by https://www.edwardthomson.com/blog/building_an_action.html
+name: Verify distribution bundle
 
 on:
   push:
     branches: [main]
-
   workflow_dispatch:
 
 jobs:
-  build-to-dist:
+  verify-dist:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check out main branch
-        uses: actions/checkout@v2
-      - name: Check out distribution branch
-        uses: actions/checkout@v2
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          ref: "dist"
-          path: "dist"
+          node-version: 24
+          cache: npm
 
-      - name: Build and package
-        run: |
-          npm i
-          npm run build
-          cp action.yml dist/
-          cp README.md dist/
-          cp LICENSE dist/
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
 
-      - name: Check for changes
-        id: status
+      - name: Ensure dist is committed
         run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "::set-output name=has_changes::yes"
+          if [ -n "$(git status --porcelain dist)" ]; then
+            echo "dist/ is out of date. Run npm run build and commit dist/."
+            git status --porcelain dist
+            exit 1
           fi
-        working-directory: dist
-
-      - name: Update distribution
-        env:
-          GITHUB_TOKEN: ${{ secrets.UPDATE_DIST_PAT }}
-        run: |
-          git add --verbose .
-          git config user.name 'Jeff Israel'
-          git config user.email 'github@jeffisrael.com'
-          git commit -m 'Distribution updated by GitHub action'
-          git push origin dist
-        if: steps.status.outputs.has_changes == 'yes'
-        working-directory: dist
