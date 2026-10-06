@@ -6,7 +6,9 @@ A GitHub Action to clean up old package versions from [GitHub Packages](https://
 
 > **v3** rewrites the action for current GitHub Packages. npm/container packages no longer work with the old GraphQL Packages API, so v3 uses REST, runs on **Node 24**, paginates all versions, and keeps a configurable newest-N retain floor.
 
-The compiled bundle lives on the [`dist`](https://github.com/stripethree/gpr-janitor/tree/dist) branch (not on `main`). CI rebuilds and pushes that branch when `main` changes.
+The compiled bundle lives on the [`dist`](https://github.com/stripethree/gpr-janitor/tree/dist) branch (not on `main`). CI rebuilds and pushes that branch when `main` changes. Version tags such as `@v3` / `@v3.0.0` point at `dist` commits.
+
+See [CHANGELOG.md](./CHANGELOG.md) for release notes.
 
 ## Install
 
@@ -28,10 +30,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clean up old package versions
-        uses: stripethree/gpr-janitor@dist
+        uses: stripethree/gpr-janitor@v3
         with:
-          package-name: api-client
-          owner: talentflows
+          # Package name without scope, e.g. my-lib for @my-org/my-lib
+          package-name: my-lib
+          owner: ${{ github.repository_owner }}
           owner-type: org
           package-type: npm
           keep-versions: 20
@@ -41,7 +44,14 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-Use `@dist` for the runnable action. Do not point consumers at `@main` (source only).
+**Pinning**
+
+| Ref | Use when |
+| --- | --- |
+| `@v3` | Recommended floating major pin |
+| `@v3.0.0` | Exact release pin |
+| `@dist` | Latest published bundle from `main` (may move between releases) |
+| `@main` | Do not use — source only, no compiled `index.js` |
 
 ## Inputs
 
@@ -51,7 +61,7 @@ Use `@dist` for the runnable action. Do not point consumers at `@main` (source o
 | `dry-run` | `true` | When `true`, only report candidates |
 | `keep-versions` | `5` | Newest versions to always keep (at least 1 is always retained) |
 | `min-age-days` | `30` | Minimum age before a version is eligible for deletion |
-| `package-name` | _(required)_ | Package name **without** scope (`api-client`, not `@org/api-client`) |
+| `package-name` | _(required)_ | Package name **without** scope (`my-lib`, not `@my-org/my-lib`) |
 | `package-type` | `npm` | `npm`, `container`, `maven`, `nuget`, or `rubygems` |
 | `owner` | `${{ github.repository_owner }}` | Org or user that owns the package |
 | `owner-type` | `org` | `org` or `user` |
@@ -83,11 +93,11 @@ If deletes fail with 403, use a classic PAT (or GitHub App token) with `read:pac
 | --- | --- |
 | GraphQL Packages API | REST Packages API |
 | `runs: node12` | `runs: node24` |
-| `uses: ...@dist` (node12 / GraphQL) | `uses: ...@dist` (node24 / REST) after v3 merge |
+| `uses: ...@dist` (GraphQL-era bundle) | `uses: ...@v3` or `@dist` (REST bundle) |
 | `packages-to-fetch` / `versions-to-fetch` | Full pagination; set `package-name` explicitly |
 | Age via package file `updatedAt` | Age via version `updated_at` / `created_at` |
 
-v2 cannot clean modern npm packages on GitHub’s current Packages architecture. Use v3.
+v2 cannot clean modern npm packages on GitHub’s current Packages architecture. Upgrade to v3.
 
 ## Development
 
