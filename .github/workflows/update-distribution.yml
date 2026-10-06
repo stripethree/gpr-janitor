@@ -1,0 +1,61 @@
+name: Update Distribution
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-to-dist:
+    name: Build and publish dist branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v7
+
+      - name: Checkout distribution branch
+        uses: actions/checkout@v7
+        with:
+          ref: dist
+          path: dist
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install, test, and build
+        run: |
+          npm ci
+          npm run lint
+          npm run prettier
+          npm test
+          npm run build
+          cp action.yml dist/
+          cp README.md dist/
+          cp LICENSE dist/
+
+      - name: Check for changes
+        id: status
+        working-directory: dist
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "has_changes=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=no" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Update distribution
+        if: steps.status.outputs.has_changes == 'yes'
+        working-directory: dist
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --verbose .
+          git commit -m "chore: update distribution bundle"
+          git push origin dist

@@ -1,31 +1,49 @@
-name: GitHub Package Repository Janitor
-description: Remove old package versions from the GitHub Package Registry
+name: GitHub Package Registry Janitor
+description: Remove old package versions from GitHub Packages using the REST API
 author: Jeff Israel
 branding:
   icon: trash-2
   color: blue
+
 inputs:
+  token:
+    description: GitHub token with permission to list and delete package versions
+    required: false
+    default: ${{ github.token }}
   dry-run:
-    description: When 'true', will not delete package versions, only log information
-    required: true
-    default: "true"
+    description: When true, report candidates without deleting
+    required: false
+    default: 'true'
   keep-versions:
-    description: Minimum number of recent versions to keep, per package
-    required: true
-    default: "5"
+    description: Minimum number of newest versions to keep
+    required: false
+    default: '5'
   min-age-days:
-    description: Minimum age, in days, for a release to be deleted
+    description: Minimum age in days before a version is eligible for deletion
+    required: false
+    default: '30'
+  package-name:
+    description: Package name without scope (e.g. api-client for @talentflows/api-client)
     required: true
-    default: "30"
-  packages-to-fetch:
-    description: Maximum number of packages to fetch
-    required: true
-    default: "1"
-  versions-to-fetch:
-    description: Maximum number of versions to fetch, per package
-    required: true
-    default: "25"
+  package-type:
+    description: GitHub Packages package type (npm, container, maven, nuget, rubygems)
+    required: false
+    default: npm
+  owner:
+    description: User or organization that owns the package
+    required: false
+    default: ${{ github.repository_owner }}
+  owner-type:
+    description: Package owner type (org or user)
+    required: false
+    default: org
+
+outputs:
+  candidate-count:
+    description: Number of versions selected for deletion
+  deleted-count:
+    description: Number of versions deleted (0 in dry-run mode)
 
 runs:
-  using: "node12"
-  main: "index.js"
+  using: node24
+  main: index.js
