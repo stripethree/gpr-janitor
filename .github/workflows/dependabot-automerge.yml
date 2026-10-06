@@ -1,0 +1,136 @@
+name: Dependabot Automerge
+
+on:
+  workflow_run:
+    workflows:
+      - Branch Build Validation
+    types:
+      - completed
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  automerge:
+    name: Automerge Dependabot patch/minor updates
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+      HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+      EXPECTED_DEPENDABOT_AUTHOR: app/dependabot
+
+    steps:
+      - name: Resolve open PR for triggering branch
+        id: resolve_pr
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "should_process=false" >> "$GITHUB_OUTPUT"
+          echo "pr_number=" >> "$GITHUB_OUTPUT"
+          echo "pr_url=" >> "$GITHUB_OUTPUT"
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "Manual dispatch is not branch-targeted; skipping by default."
+            exit 0
+          fi
+
+          if [[ -z "${HEAD_BRANCH:-}" ]]; then
+            echo "No head branch provided by workflow_run; skipping."
+            exit 0
+          fi
+
+          pr_json="$(gh pr list --repo "$GH_REPO" --head "$HEAD_BRANCH" --state open --json number,url,author)"
+          pr_count="$(jq 'length' <<< "$pr_json")"
+
+          if [[ "$pr_count" -ne 1 ]]; then
+            echo "Expected exactly one open PR for branch '$HEAD_BRANCH'; found $pr_count. Skipping."
+            exit 0
+          fi
+
+          pr_number="$(jq -r '.[0].number // empty' <<< "$pr_json")"
+          pr_url="$(jq -r '.[0].url // empty' <<< "$pr_json")"
+          pr_author="$(jq -r '.[0].author.login // empty' <<< "$pr_json")"
+
+          if [[ -z "$pr_number" || -z "$pr_url" ]]; then
+            echo "Resolved PR metadata incomplete; skipping."
+            exit 0
+          fi
+
+          if [[ "$pr_author" != "$EXPECTED_DEPENDABOT_AUTHOR" ]]; then
+            echo "PR #$pr_number author '$pr_author' does not match expected '$EXPECTED_DEPENDABOT_AUTHOR'; skipping."
+            exit 0
+          fi
+
+          echo "should_process=true" >> "$GITHUB_OUTPUT"
+          echo "pr_number=$pr_number" >> "$GITHUB_OUTPUT"
+          echo "pr_url=$pr_url" >> "$GITHUB_OUTPUT"
+
+      - name: Classify dependency update type
+        id: classify
+        if: steps.resolve_pr.outputs.should_process == 'true'
+        shell: bash
+        env:
+          PR_NUMBER: ${{ steps.resolve_pr.outputs.pr_number }}
+        run: |
+          set -euo pipefail
+
+          pr_json="$(gh pr view --repo "$GH_REPO" "$PR_NUMBER" --json title,body)"
+          text="$(jq -r '.title + "\n" + (.body // "")' <<< "$pr_json")"
+
+          update_type="$(
+            UPDATE_TEXT="$text" node -e '
+              const t = process.env.UPDATE_TEXT || "";
+              const re = /from\s+v?(\d+)\.(\d+)\.(\d+)(?:[-+][^\s]*)?\s+to\s+v?(\d+)\.(\d+)\.(\d+)(?:[-+][^\s]*)?/ig;
+              let saw = false, major = false, minor = false, patch = false;
+              for (const m of t.matchAll(re)) {
+                saw = true;
+                const from = [Number(m[1]), Number(m[2]), Number(m[3])];
+                const to = [Number(m[4]), Number(m[5]), Number(m[6])];
+                if (to[0] > from[0]) major = true;
+                else if (to[1] > from[1]) minor = true;
+                else if (to[2] > from[2]) patch = true;
+              }
+              if (!saw) console.log("version-update:unknown");
+              else if (major) console.log("version-update:semver-major");
+              else if (minor) console.log("version-update:semver-minor");
+              else if (patch) console.log("version-update:semver-patch");
+              else console.log("version-update:unknown");
+            '
+          )"
+
+          echo "update_type=$update_type" >> "$GITHUB_OUTPUT"
+
+      - name: Skip non patch/minor updates
+        if: steps.resolve_pr.outputs.should_process == 'true' && steps.classify.outputs.update_type != 'version-update:semver-patch' && steps.classify.outputs.update_type != 'version-update:semver-minor'
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Skipping PR #${{ steps.resolve_pr.outputs.pr_number }} due to update type '${{ steps.classify.outputs.update_type }}'."
+
+      - name: Check PR mergeability
+        id: mergeability
+        if: steps.resolve_pr.outputs.should_process == 'true' && (steps.classify.outputs.update_type == 'version-update:semver-patch' || steps.classify.outputs.update_type == 'version-update:semver-minor')
+        shell: bash
+        env:
+          PR_NUMBER: ${{ steps.resolve_pr.outputs.pr_number }}
+        run: |
+          set -euo pipefail
+          state="$(gh pr view --repo "$GH_REPO" "$PR_NUMBER" --json mergeStateStatus --jq '.mergeStateStatus')"
+          case "$state" in
+            CLEAN|HAS_HOOKS|UNSTABLE) echo "should_merge=true" >> "$GITHUB_OUTPUT" ;;
+            *) echo "should_merge=false" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      - name: Merge eligible PR
+        if: steps.mergeability.outputs.should_merge == 'true'
+        shell: bash
+        env:
+          PR_URL: ${{ steps.resolve_pr.outputs.pr_url }}
+        run: |
+          set -euo pipefail
+          gh pr merge --repo "$GH_REPO" --squash "$PR_URL"

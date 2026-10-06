@@ -25,7 +25,9 @@ function getConfig() {
 
   const owner = core.getInput('owner') || process.env.GITHUB_REPOSITORY_OWNER;
   if (!owner) {
-    throw new Error('Missing owner. Set inputs.owner or GITHUB_REPOSITORY_OWNER.');
+    throw new Error(
+      'Missing owner. Set inputs.owner or GITHUB_REPOSITORY_OWNER.'
+    );
   }
 
   const ownerType = (core.getInput('owner-type') || 'org').toLowerCase();
@@ -35,7 +37,13 @@ function getConfig() {
 
   const packageName = core.getInput('package-name', { required: true });
   const packageType = (core.getInput('package-type') || 'npm').toLowerCase();
-  const allowedTypes = new Set(['npm', 'container', 'maven', 'nuget', 'rubygems']);
+  const allowedTypes = new Set([
+    'npm',
+    'container',
+    'maven',
+    'nuget',
+    'rubygems'
+  ]);
   if (!allowedTypes.has(packageType)) {
     throw new Error(
       `package-type must be one of: ${Array.from(allowedTypes).join(', ')}`
@@ -57,7 +65,7 @@ function getConfig() {
     minAgeDays: parsePositiveInt(
       'min-age-days',
       core.getInput('min-age-days') || '30'
-    ),
+    )
   };
 }
 

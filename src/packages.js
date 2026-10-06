@@ -13,7 +13,7 @@ async function listPackageVersions(octokit, params) {
         package_type: packageType,
         package_name: packageName,
         per_page: 100,
-        state: 'active',
+        state: 'active'
       }
     );
   }
@@ -25,7 +25,7 @@ async function listPackageVersions(octokit, params) {
       package_type: packageType,
       package_name: packageName,
       per_page: 100,
-      state: 'active',
+      state: 'active'
     }
   );
 }
@@ -42,7 +42,7 @@ async function deletePackageVersion(octokit, params) {
       org: owner,
       package_type: packageType,
       package_name: packageName,
-      package_version_id: versionId,
+      package_version_id: versionId
     });
     return;
   }
@@ -51,7 +51,7 @@ async function deletePackageVersion(octokit, params) {
     username: owner,
     package_type: packageType,
     package_name: packageName,
-    package_version_id: versionId,
+    package_version_id: versionId
   });
 }
 

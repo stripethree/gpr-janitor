@@ -19,14 +19,14 @@ async function run() {
     owner: config.owner,
     ownerType: config.ownerType,
     packageType: config.packageType,
-    packageName: config.packageName,
+    packageName: config.packageName
   });
 
   core.info(`Fetched ${versions.length} active version(s).`);
 
   const candidates = selectVersionsForDeletion(versions, {
     keepVersions: config.keepVersions,
-    minAgeDays: config.minAgeDays,
+    minAgeDays: config.minAgeDays
   });
 
   core.setOutput('candidate-count', String(candidates.length));
@@ -58,7 +58,7 @@ async function run() {
       ownerType: config.ownerType,
       packageType: config.packageType,
       packageName: config.packageName,
-      versionId: version.id,
+      versionId: version.id
     });
     deleted += 1;
   }

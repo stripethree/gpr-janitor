@@ -10,7 +10,7 @@ function version(id, name, daysAgo) {
     id,
     name,
     updated_at: updated.toISOString(),
-    created_at: updated.toISOString(),
+    created_at: updated.toISOString()
   };
 }
 
@@ -21,13 +21,13 @@ describe('selectVersionsForDeletion', () => {
       version(2, '1.0.4', 10),
       version(3, '1.0.3', 40),
       version(4, '1.0.2', 50),
-      version(5, '1.0.1', 60),
+      version(5, '1.0.1', 60)
     ];
 
     const selected = selectVersionsForDeletion(versions, {
       keepVersions: 2,
       minAgeDays: 30,
-      now,
+      now
     });
 
     assert.deepEqual(
@@ -41,7 +41,7 @@ describe('selectVersionsForDeletion', () => {
     const selected = selectVersionsForDeletion(versions, {
       keepVersions: 5,
       minAgeDays: 30,
-      now,
+      now
     });
     assert.deepEqual(selected, []);
   });
@@ -51,7 +51,7 @@ describe('selectVersionsForDeletion', () => {
     const selected = selectVersionsForDeletion(versions, {
       keepVersions: 0,
       minAgeDays: 30,
-      now,
+      now
     });
     assert.deepEqual(
       selected.map((v) => v.name),
@@ -63,12 +63,12 @@ describe('selectVersionsForDeletion', () => {
     const versions = [
       version(1, '1.0.3', 1),
       version(2, '1.0.2', 5),
-      version(3, '1.0.1', 10),
+      version(3, '1.0.1', 10)
     ];
     const selected = selectVersionsForDeletion(versions, {
       keepVersions: 1,
       minAgeDays: 30,
-      now,
+      now
     });
     assert.deepEqual(selected, []);
   });

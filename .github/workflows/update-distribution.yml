@@ -1,8 +1,9 @@
-name: Update distribution
+name: Update Distribution
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -10,26 +11,29 @@ permissions:
 
 jobs:
   build-to-dist:
+    name: Build and publish dist branch
     runs-on: ubuntu-latest
     steps:
-      - name: Check out main branch
-        uses: actions/checkout@v4
+      - name: Checkout main branch
+        uses: actions/checkout@v7
 
-      - name: Check out distribution branch
-        uses: actions/checkout@v4
+      - name: Checkout distribution branch
+        uses: actions/checkout@v7
         with:
           ref: dist
           path: dist
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version-file: .nvmrc
           cache: npm
 
-      - name: Build and package
+      - name: Install, test, and build
         run: |
           npm ci
+          npm run lint
+          npm run prettier
           npm test
           npm run build
           cp action.yml dist/

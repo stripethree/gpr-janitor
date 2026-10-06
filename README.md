@@ -2,7 +2,7 @@
 
 A GitHub Action to clean up old package versions from [GitHub Packages](https://docs.github.com/en/packages) using the REST API.
 
-![Build PRs](https://github.com/stripethree/gpr-janitor/actions/workflows/build-on-pr.yml/badge.svg)
+![Branch Build Validation](https://github.com/stripethree/gpr-janitor/actions/workflows/branch-build-validation.yml/badge.svg)
 
 > **v3** rewrites the action for current GitHub Packages. npm/container packages no longer work with the old GraphQL Packages API, so v3 uses REST, runs on **Node 24**, paginates all versions, and keeps a configurable newest-N retain floor.
 
@@ -92,11 +92,15 @@ v2 cannot clean modern npm packages on GitHub’s current Packages architecture.
 ## Development
 
 ```bash
-nvm use 24
+nvm use
 npm ci
+npm run lint
+npm run prettier
 npm test
 npm run build   # writes local dist/ (gitignored); CI publishes it to the dist branch
 ```
+
+Pre-commit runs `lint-staged` (eslint + prettier) via husky.
 
 ## Prior art
 

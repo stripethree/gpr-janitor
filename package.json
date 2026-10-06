@@ -12,13 +12,32 @@
   },
   "scripts": {
     "build": "ncc build src/index.js -o dist --license licenses.txt",
-    "test": "node --test src/**/*.test.js"
+    "lint": "eslint src",
+    "lint-fix": "eslint src --fix",
+    "prettier": "prettier --config .prettierrc \"src/**/*.js\" --check --log-level warn",
+    "prettier-fix": "prettier --config .prettierrc \"src/**/*.js\" --write --log-level error",
+    "test": "node --test src/**/*.test.js",
+    "prepare": "husky || true"
+  },
+  "lint-staged": {
+    "src/**/*.js": [
+      "eslint --fix",
+      "prettier --config .prettierrc --write"
+    ]
   },
   "dependencies": {
     "@actions/core": "^1.11.1",
     "@actions/github": "^6.0.1"
   },
   "devDependencies": {
-    "@vercel/ncc": "^0.38.3"
+    "@eslint/js": "^10.0.1",
+    "@vercel/ncc": "^0.38.3",
+    "eslint": "^10.12.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.6",
+    "globals": "^17.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "prettier": "^3.9.9"
   }
 }
