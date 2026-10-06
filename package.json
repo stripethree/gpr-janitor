@@ -2,7 +2,7 @@
   "name": "gpr-janitor",
   "version": "3.0.0",
   "description": "A GitHub Action to clean up old GitHub Packages versions",
-  "main": "dist/index.js",
+  "main": "index.js",
   "repository": "git@github.com:stripethree/gpr-janitor.git",
   "author": "Jeff Israel <jeff.israel@gmail.com>",
   "license": "MIT",

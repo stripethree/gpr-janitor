@@ -6,6 +6,8 @@ A GitHub Action to clean up old package versions from [GitHub Packages](https://
 
 > **v3** rewrites the action for current GitHub Packages. npm/container packages no longer work with the old GraphQL Packages API, so v3 uses REST, runs on **Node 24**, paginates all versions, and keeps a configurable newest-N retain floor.
 
+The compiled bundle lives on the [`dist`](https://github.com/stripethree/gpr-janitor/tree/dist) branch (not on `main`). CI rebuilds and pushes that branch when `main` changes.
+
 ## Install
 
 ```yaml
@@ -26,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clean up old package versions
-        uses: stripethree/gpr-janitor@v3
+        uses: stripethree/gpr-janitor@dist
         with:
           package-name: api-client
           owner: talentflows
@@ -39,8 +41,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-
-Pin a release tag (`@v3` or `@v3.0.0`) rather than `@dist` / `@main`.
+Use `@dist` for the runnable action. Do not point consumers at `@main` (source only).
 
 ## Inputs
 
@@ -82,7 +83,7 @@ If deletes fail with 403, use a classic PAT (or GitHub App token) with `read:pac
 | --- | --- |
 | GraphQL Packages API | REST Packages API |
 | `runs: node12` | `runs: node24` |
-| `uses: ...@dist` | `uses: ...@v3` |
+| `uses: ...@dist` (node12 / GraphQL) | `uses: ...@dist` (node24 / REST) after v3 merge |
 | `packages-to-fetch` / `versions-to-fetch` | Full pagination; set `package-name` explicitly |
 | Age via package file `updatedAt` | Age via version `updated_at` / `created_at` |
 
@@ -94,10 +95,8 @@ v2 cannot clean modern npm packages on GitHub’s current Packages architecture.
 nvm use 24
 npm ci
 npm test
-npm run build
+npm run build   # writes local dist/ (gitignored); CI publishes it to the dist branch
 ```
-
-Commit the generated `dist/` bundle with source changes so tagged releases are runnable.
 
 ## Prior art
 
