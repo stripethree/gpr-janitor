@@ -1,6 +1,6 @@
-const { describe, it } = require('node:test');
-const assert = require('node:assert/strict');
-const { selectVersionsForDeletion } = require('./select');
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import { selectVersionsForDeletion } from './select.js';
 
 const now = new Date('2026-10-06T12:00:00.000Z');
 

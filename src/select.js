@@ -39,4 +39,4 @@ function selectVersionsForDeletion(versions, options) {
   });
 }
 
-module.exports = { selectVersionsForDeletion };
+export { selectVersionsForDeletion };
