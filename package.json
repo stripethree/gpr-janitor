@@ -16,7 +16,7 @@
     "lint-fix": "eslint src --fix",
     "prettier": "prettier --config .prettierrc \"src/**/*.js\" --check --log-level warn",
     "prettier-fix": "prettier --config .prettierrc \"src/**/*.js\" --write --log-level error",
-    "test": "node --test src/**/*.test.js",
+    "test": "node --test \"src/**/*.test.js\"",
     "prepare": "husky || true"
   },
   "lint-staged": {
@@ -39,5 +39,6 @@
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
     "prettier": "^3.9.10"
-  }
+  },
+  "type": "module"
 }

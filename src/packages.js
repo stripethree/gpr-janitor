@@ -55,4 +55,4 @@ async function deletePackageVersion(octokit, params) {
   });
 }
 
-module.exports = { listPackageVersions, deletePackageVersion };
+export { listPackageVersions, deletePackageVersion };

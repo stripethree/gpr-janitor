@@ -1,8 +1,9 @@
-const core = require('@actions/core');
-const github = require('@actions/github');
-const { getConfig } = require('./config');
-const { listPackageVersions, deletePackageVersion } = require('./packages');
-const { selectVersionsForDeletion } = require('./select');
+import * as core from '@actions/core';
+import * as github from '@actions/github';
+import { getConfig } from './config.js';
+import { listPackageVersions, deletePackageVersion } from './packages.js';
+import { selectVersionsForDeletion } from './select.js';
+import { pathToFileURL } from 'node:url';
 
 async function run() {
   const config = getConfig();
@@ -67,10 +68,13 @@ async function run() {
   core.info(`Deleted ${deleted} version(s).`);
 }
 
-if (require.main === module) {
+const isDirectRun =
+  process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isDirectRun) {
   run().catch((error) => {
     core.setFailed(error instanceof Error ? error.message : String(error));
   });
 }
 
-module.exports = { run };
+export { run };
