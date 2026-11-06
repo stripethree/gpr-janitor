@@ -1,4 +1,4 @@
-const core = require('@actions/core');
+import * as core from '@actions/core';
 
 function parsePositiveInt(name, raw, { allowZero = false } = {}) {
   if (!/^\d+$/.test(raw)) {
@@ -69,4 +69,4 @@ function getConfig() {
   };
 }
 
-module.exports = { getConfig, parseBoolean, parsePositiveInt };
+export { getConfig, parseBoolean, parsePositiveInt };
